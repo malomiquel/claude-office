@@ -90,7 +90,7 @@ Côté page : `state.js` porte l'état partagé et `rerender()` ; `main.js` bran
 - Le mode d'autorisation est fixé au lancement d'un agent : `''` = pas de `--permission-mode` (réglages de
   l'utilisateur, ex. auto). Forcer `acceptEdits` bloque `gh`/`git` sans personne pour valider. Changer de mode = relance.
 
-- **Les hooks et scripts appellent `DIRECT_PORT` (4748), jamais 4747** : avec l'option port 80 (macOS), pf redirige 80 -> 4747 et une connexion directe peut réutiliser
+- **pf ne doit viser que `PF_PORT` (4749)**, jamais la page (4747) ni les hooks (4748) : pf redirige 80 -> 4749 et une connexion directe peut réutiliser
   le port client d'une ancienne connexion redirigée, puis rester bloquée en `SYN_RCVD`. Accès direct = `DIRECT_PORT` 4748.
 - Les commandes Bash sandboxées de Claude Code n'atteignent pas toujours localhost : tester via Chrome,
   ou hors sandbox pour un simple `curl` local.

@@ -59,6 +59,6 @@ Si tu as utilisé `/office-setup` : retire l'alias `claude` de ton shell, la rel
 
 Aucune dépendance, pas de build : `node server.mjs`, puis http://localhost:4747. Architecture et pièges : [CLAUDE.md](CLAUDE.md).
 
-Variables : `PORT` (4747), `DIRECT_PORT` (4748, utilisé par les hooks), `CLAUDE_OFFICE_HOME` (`~/.claude-office`), `OFFICE_WINDOW_MIN` (sessions visibles, 120 min), `OFFICE_ASK_WAIT_S` (90 s).
+Variables : `PORT` (4747), `DIRECT_PORT` (4748, utilisé par les hooks), `PF_PORT` (4749, réservé à l'option port 80), `CLAUDE_OFFICE_HOME` (`~/.claude-office`), `OFFICE_WINDOW_MIN` (sessions visibles, 120 min), `OFFICE_ASK_WAIT_S` (90 s).
 
 Licence MIT.

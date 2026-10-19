@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
-import { PORT, DIRECT_PORT, HOST, TOKEN, PUBLIC_DIR, REFRESH_MS, VERSION, ROOT } from './lib/config.mjs';
+import { PORT, DIRECT_PORT, PF_PORT, HOST, TOKEN, PUBLIC_DIR, REFRESH_MS, VERSION, ROOT } from './lib/config.mjs';
 import { expandHome } from './lib/text.mjs';
 import { getSnapshot, refresh, addClient, pingClients } from './lib/snapshot.mjs';
 import { dismiss } from './lib/dismissed.mjs';
@@ -172,11 +172,13 @@ async function handler(req, res) {
 const LOOPBACK = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1']);
 const server = http.createServer(handler);
 const direct = http.createServer(handler);
-for (const srv of [server, direct]) srv.on('connection', (sock) => { if (!LOOPBACK.has(sock.remoteAddress)) sock.destroy(); });
+const redirected = http.createServer(handler);
+for (const srv of [server, direct, redirected]) srv.on('connection', (sock) => { if (!LOOPBACK.has(sock.remoteAddress)) sock.destroy(); });
 
 direct.listen(DIRECT_PORT, HOST);
+redirected.listen(PF_PORT, HOST);
 server.listen(PORT, HOST, () => {
-  console.log(`🏢 Claude Office ouvert sur http://office.localhost (accès direct : http://127.0.0.1:${DIRECT_PORT})`);
+  console.log(`🏢 Claude Office ouvert sur http://localhost:${PORT}`);
   refresh();
   setInterval(refresh, REFRESH_MS);
   setInterval(() => { pingClients(); pingChannels(); }, 20_000);

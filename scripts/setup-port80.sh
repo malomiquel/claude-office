@@ -1,5 +1,6 @@
 #!/bin/sh
-# Redirige http://office.localhost (port 80) vers le serveur sur 127.0.0.1:4747.
+# Redirige http://office.localhost (port 80) vers le serveur sur 127.0.0.1:4749, port réservé à cette redirection
+# (une connexion directe sur le port visé par pf peut se bloquer : la page reste aussi sur http://localhost:4747).
 # À lancer une fois : sudo sh setup-port80.sh   (désinstaller : sudo sh setup-port80.sh --uninstall)
 # La règle va dans l'ancre com.apple/claude-office : les règles pf d'Apple ne sont pas touchées.
 set -e
@@ -29,7 +30,7 @@ cat > "$PLIST" <<EOF
   <array>
     <string>/bin/sh</string>
     <string>-c</string>
-    <string>echo 'rdr pass on lo0 inet proto tcp from any to 127.0.0.1 port 80 -&gt; 127.0.0.1 port 4747' | /sbin/pfctl -a $ANCHOR -f - &amp;&amp; /sbin/pfctl -E</string>
+    <string>echo 'rdr pass on lo0 inet proto tcp from any to 127.0.0.1 port 80 -&gt; 127.0.0.1 port 4749' | /sbin/pfctl -a $ANCHOR -f - &amp;&amp; /sbin/pfctl -E</string>
   </array>
   <key>RunAtLoad</key>
   <true/>

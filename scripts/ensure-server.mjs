@@ -16,6 +16,7 @@ const VERSION = JSON.parse(fs.readFileSync(path.join(ROOT, '.claude-plugin', 'pl
 const DATA_DIR = process.env.CLAUDE_OFFICE_HOME || path.join(os.homedir(), '.claude-office');
 const DIRECT_PORT = Number(process.env.DIRECT_PORT || 4748);
 const URL_PAGE = `http://localhost:${process.env.PORT || 4747}`;
+const URL_PORT80 = 'http://office.localhost'; // option macOS (scripts/setup-port80.sh)
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function health() {
@@ -37,9 +38,20 @@ function start() {
   spawn(process.execPath, [path.join(ROOT, 'server.mjs')], { detached: true, stdio: ['ignore', log, log], env: process.env }).unref();
 }
 
-function openPage() {
+function responds(url) {
+  return new Promise((resolve) => {
+    const req = http.get(url, { timeout: 800 }, (res) => { res.resume(); resolve(res.statusCode === 200); });
+    req.on('timeout', () => { req.destroy(); resolve(false); });
+    req.on('error', () => resolve(false));
+  });
+}
+
+// l'adresse sans port si elle est installée, sinon le port de la page
+async function openPage() {
+  const url = (await responds(`${URL_PORT80}/`)) ? URL_PORT80 : URL_PAGE;
   const cmd = process.platform === 'darwin' ? 'open' : 'xdg-open';
-  spawn(cmd, [URL_PAGE], { detached: true, stdio: 'ignore' }).on('error', () => {}).unref();
+  spawn(cmd, [url], { detached: true, stdio: 'ignore' }).on('error', () => {}).unref();
+  return url;
 }
 
 const h = await health();
@@ -51,6 +63,5 @@ else if (h.version !== VERSION && !h.busy) {
 }
 if (process.argv.includes('--open')) {
   for (let i = 0; i < 20 && !(await health()); i++) await sleep(150);
-  openPage();
-  console.log(`Claude Office : ${URL_PAGE}`);
+  console.log(`Claude Office : ${await openPage()}`);
 }
