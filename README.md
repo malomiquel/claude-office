@@ -10,11 +10,11 @@ Tu vois qui travaille sur quoi, tu lui écris, tu réponds à ses questions et �
 Prérequis : [Claude Code](https://code.claude.com) et **Node.js 18+** (macOS ou Linux).
 
 ```sh
-claude plugin marketplace add <owner>/claude-office
+claude plugin marketplace add malomiquel/claude-office
 claude plugin install office@claude-office
 ```
 
-Ou, depuis une session Claude Code : `/plugin install office --marketplace <owner>/claude-office`
+Ou, depuis une session Claude Code : `/plugin install office --marketplace malomiquel/claude-office`
 
 C'est tout : le bureau démarre tout seul à l'ouverture de ta prochaine session Claude Code.
 Ouvre-le avec la commande **`/office`**, ou directement sur **http://localhost:4747**.
