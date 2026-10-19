@@ -23,7 +23,7 @@ Les messages écrits dans le bureau arrivent dans la session du terminal, et les
    ```
    Ne l'ajoute pas s'il y est déjà.
 3. Sans autorisation, Claude Code refuse ce channel. Deux choix, à expliquer :
-   - **Sans avertissement** (recommandé) : l'utilisateur tape lui-même `sudo sh "${CLAUDE_PLUGIN_ROOT}/scripts/allow-channel.sh"`. Cela crée les réglages administrateur de la machine (`channelsEnabled` et `allowedChannelPlugins`). Préviens que cette liste **remplace** celle d'Anthropic (un channel officiel comme Telegram ne serait plus autorisé sans l'ajouter). Sur un compte Team ou Enterprise, c'est l'administrateur de l'organisation qui doit autoriser les channels.
+   - **Sans avertissement** (recommandé) : l'utilisateur tape lui-même `sudo NODE="$(command -v node)" sh "${CLAUDE_PLUGIN_ROOT}/scripts/allow-channel.sh"`. Cela crée les réglages administrateur de la machine (`channelsEnabled` et `allowedChannelPlugins`), ou les ajoute à ceux qui existent déjà (sauvegarde `.bak-claude-office`) ; `--uninstall` ne retire que l'entrée du bureau. Préviens que cette liste **remplace** celle d'Anthropic (un channel officiel comme Telegram ne serait plus autorisé sans l'ajouter). Sur un compte Team ou Enterprise, c'est l'administrateur de l'organisation qui doit autoriser les channels.
    - **Avec avertissement** : remplacer `--channels` par `--dangerously-load-development-channels` dans `~/.claude-office/bin/claude-office`. Un écran de confirmation s'affiche alors à chaque lancement.
 4. Dis-lui de rouvrir un terminal puis de lancer `claude` : l'îlot de sa session affiche 🔗 dans le bureau.
 

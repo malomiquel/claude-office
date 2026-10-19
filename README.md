@@ -25,9 +25,13 @@ Options facultatives (relier le terminal au bureau, quota, adresse sans port) : 
 
 - **L'open space** : un îlot par session, avec le bureau du **chef** (la session) et les petits bureaux de ses **sous-agents**. Une bulle dit ce que chacun fait en direct (lit, code, terminal, web, délègue…).
 - **Les couleurs** : 🟠 te pose une question · 🟡 a fini · 🔴 attend ta permission · ☕ en pause (coin café, après 10 min sans activité).
-- **Le panneau d'un agent** (clic) : sa mission, son état, son historique récent (markdown, tableaux), et une zone pour lui écrire, avec des fichiers joints (images, PDF, texte).
+- **Le panneau d'un agent** (clic) : sa mission, son état, son historique récent (markdown, tableaux), et une zone pour lui écrire, avec des fichiers joints (images, PDF, texte). **☕ Pause** l'envoie au coin café jusqu'à ce qu'il se remette au travail.
+- **Les déplacements** : quand un agent part en réunion ou au café, il y va à pied.
 - **En haut** : les compteurs, le quota 5 h / semaine (option), et **Recruter** pour lancer un nouvel agent dans un dossier.
 - **Navigation** : glisse pour te déplacer, pince ou ⌘/Ctrl + molette pour zoomer, double-clic sur un bureau pour t'en approcher.
+- **Clavier** : Tab / Maj+Tab pour passer à l'agent suivant qui t'attend, 1-9 pour un bureau, N pour recruter, M pour écrire, Échap pour fermer.
+- **🔔** : une notification quand un agent te pose une question ou attend ta permission alors que tu es ailleurs. **☀ / ☾** : thème clair ou sombre. Les fenêtres suivent l'heure du jour.
+- **Consommé** (panneau) : les tokens utilisés par la session, détail au survol.
 
 ## Interagir avec les agents
 
@@ -53,11 +57,11 @@ Le **channel** est une fonction en préversion de Claude Code (connexion claude.
 claude plugin uninstall office@claude-office
 rm -rf ~/.claude-office
 ```
-Si tu as utilisé `/office-setup` : retire l'alias `claude` de ton shell, la relance de la barre de statut dans `~/.claude/settings.json`, et lance `sudo sh scripts/allow-channel.sh --uninstall` ou `sudo sh scripts/setup-port80.sh --uninstall` si tu les avais activés.
+Si tu as utilisé `/office-setup` : retire l'alias `claude` de ton shell, la relance de la barre de statut dans `~/.claude/settings.json`, et lance `sudo NODE="$(command -v node)" sh scripts/allow-channel.sh --uninstall` ou `sudo sh scripts/setup-port80.sh --uninstall` si tu les avais activés.
 
 ## Développement
 
-Aucune dépendance, pas de build : `node server.mjs`, puis http://localhost:4747. Architecture et pièges : [CLAUDE.md](CLAUDE.md).
+Aucune dépendance, pas de build : `node server.mjs`, puis http://localhost:4747. Tests : `node --test`. Architecture et pièges : [CLAUDE.md](CLAUDE.md).
 
 Variables : `PORT` (4747), `DIRECT_PORT` (4748, utilisé par les hooks), `PF_PORT` (4749, réservé à l'option port 80), `CLAUDE_OFFICE_HOME` (`~/.claude-office`), `OFFICE_WINDOW_MIN` (sessions visibles, 120 min), `OFFICE_ASK_WAIT_S` (90 s).
 

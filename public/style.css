@@ -95,187 +95,6 @@ header h1 span { color: var(--accent); }
 .btn.sm:active { transform: translateY(1px); box-shadow: 0 1px 0 #0006; }
 .btn.confirm { background: var(--bad); color: #fff; animation: shake .3s; }
 @keyframes shake { 25% { transform: translateX(-2px); } 75% { transform: translateX(2px); } }
-.zone-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 14px; }
-.zone-head .zone-title { margin: 0; white-space: nowrap; }
-.zone-head .btn { white-space: nowrap; }
-.zone-head .btn { background: #0004; color: #d5c4b3; }
-.zone-head .btn.confirm { background: var(--bad); color: #fff; }
-.coffee .zone-title { color: #d5c4b3; }
-
-/* départ d'un agent viré : il part avec son carton */
-.leaving { pointer-events: none; animation: leave .7s ease-in forwards !important; }
-.leaving::after { content: '📦'; position: absolute; left: 50%; top: 40%; font-size: 26px; transform: translateX(-50%); animation: box .7s ease-in forwards; z-index: 6; }
-.idler.leaving { position: relative; }
-@keyframes leave { 0% { opacity: 1; transform: none; } 30% { transform: translateY(-6px); } 100% { opacity: 0; transform: translateY(14px) scale(.85); } }
-@keyframes box { from { opacity: 0; transform: translateX(-50%) scale(.4); } 30% { opacity: 1; transform: translateX(-50%) scale(1.1); } }
-
-/* ---------- le bureau : un sol infini qu'on parcourt et zoome, la page entière ---------- */
-.viewport {
-  --cam-x: 0px; --cam-y: 0px; --cam-z: 1;
-  flex: 1; min-height: 0; position: relative; overflow: hidden; touch-action: none; cursor: grab;
-  /* parquet : lames de 32 px, deux teintes alternées tous les 160 px, recalé sur la caméra */
-  background-color: var(--floor-a);
-  background-image:
-    linear-gradient(180deg, transparent 96.5%, #00000026 96.5%),
-    linear-gradient(90deg, #3b3245 50%, #382f42 50%);
-  background-size: calc(320px * var(--cam-z)) calc(32px * var(--cam-z));
-  background-position: var(--cam-x) var(--cam-y);
-}
-.viewport.smooth { transition: background-position .35s cubic-bezier(.2,.8,.3,1), background-size .35s cubic-bezier(.2,.8,.3,1); }
-.viewport.panning { cursor: grabbing; }
-.viewport.panning * { cursor: grabbing !important; }
-.world { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform; }
-.world.smooth { transition: transform .35s cubic-bezier(.2,.8,.3,1); }
-
-
-.rooms { display: flex; align-items: stretch; }
-.room { position: relative; padding: 30px 40px 70px; }
-.rooms { gap: 0; align-items: stretch; } /* le coin café est une pièce attenante, pas une carte à part */
-.room-open { width: 980px; min-height: 620px; } /* posé sur le parquet du viewport */
-.plant.big { position: absolute; transform: scale(1.6); transform-origin: bottom center; }
-.plant.corner-l { left: 26px; bottom: 18px; }
-.plant.corner-r { right: 26px; bottom: 18px; }
-.zone-title { font: 600 15px 'Pixelify Sans', monospace; color: var(--muted); margin: 0 0 14px; text-transform: uppercase; letter-spacing: 1px; }
-/* îlots d'équipe alignés, avec des allées entre eux */
-.openspace { display: grid; grid-template-columns: repeat(3, 280px); gap: 56px 48px; justify-content: center; align-items: start; padding-top: 10px; }
-.team {
-  position: relative; padding: 18px 16px 22px; border-radius: 14px; animation: pop-in .35s cubic-bezier(.2,.9,.3,1.3);
-  /* moquette de l'îlot */
-  background: #4a4060; box-shadow: inset 0 0 0 4px #554a6d, 0 6px 0 #0003;
-}
-.team-sign {
-  position: absolute; left: 14px; top: -13px; max-width: calc(100% - 28px); padding: 3px 10px; border-radius: 4px;
-  background: #241f2d; border: 2px solid #5a5068; color: var(--accent);
-  font: 600 12px 'Pixelify Sans', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.pod.boss { margin: 0 auto; width: 200px; animation: none; }
-.pod.boss .desk { height: 50px; }
-.pod .lamp { position: absolute; right: 48px; bottom: 38px; width: 6px; height: 20px; background: #6b6077; }
-.pod .lamp::before { content: ''; position: absolute; left: -7px; top: -6px; width: 20px; height: 10px; border-radius: 10px 10px 2px 2px; background: var(--warn); box-shadow: 0 4px 10px #f2c14e66; }
-.pod.boss .plate .role { font-size: 11px; color: var(--muted); }
-.pod.boss .plate .role::before { content: '👑 '; }
-
-/* petits bureaux des sous-agents, en rang devant le chef */
-.minis { display: none; flex-wrap: wrap; gap: 12px 10px; justify-content: center; margin-top: 18px; padding-top: 14px; border-top: 2px dashed #5f547a; }
-.team.has-minis .minis { display: flex; }
-.mini { position: relative; width: 76px; padding-top: 20px; text-align: center; cursor: pointer; user-select: none; animation: pop-in .35s; }
-.mini .char { position: relative; z-index: 1; display: block; width: 34px; margin: 0 auto; image-rendering: pixelated; }
-.mini-desk { position: relative; z-index: 2; height: 22px; margin-top: -4px; border-radius: 2px; background: var(--desk); box-shadow: inset 0 4px 0 var(--desk-top), 0 4px 0 #0005; }
-.mini-desk .screen { position: absolute; left: 6px; bottom: 18px; width: 20px; height: 13px; border: 2px solid #9ea3ad; border-bottom: 0; border-radius: 2px 2px 0 0; background: #cfd2d8; }
-.mini-desk .screen::after { content: ''; position: absolute; inset: 3px; border-radius: 1px; background: var(--glow, #999); }
-.mini-bubble { position: absolute; left: 50%; top: 0; transform: translateX(-50%); z-index: 3; padding: 1px 5px; border-radius: 8px; background: #fff; font-size: 11px; line-height: 1.3; box-shadow: 0 2px 0 #0005; }
-.mini-name { margin-top: 5px; font-size: 11px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.mini:hover .mini-desk, .mini.selected .mini-desk { outline: 2px solid var(--accent); outline-offset: 2px; }
-.mini.state-working > .char { animation: bob .45s steps(2) infinite; }
-.empty { grid-column: 1 / -1; color: var(--muted); font: 15px 'Pixelify Sans', monospace; padding: 40px 0; max-width: 420px; justify-self: center; text-align: center; }
-
-/* ---------- poste de travail ---------- */
-.pod {
-  position: relative; width: 168px; padding-top: 58px;
-  cursor: pointer; user-select: none;
-  animation: pop-in .35s cubic-bezier(.2,.9,.3,1.3);
-}
-@keyframes pop-in { from { transform: scale(.7); opacity: 0; } }
-.pod .chair { position: absolute; left: 50%; top: 66px; width: 62px; height: 70px; margin-left: -31px; background: #2d2a38; border-radius: 10px 10px 4px 4px; box-shadow: inset 0 -6px 0 #0004; }
-.pod .char { position: relative; width: 60px; margin: 0 auto; display: block; z-index: 1; image-rendering: pixelated; }
-.pod .desk {
-  position: relative; z-index: 2; height: 46px; margin-top: -6px;
-  background: var(--desk); border-radius: 3px;
-  box-shadow: inset 0 8px 0 var(--desk-top), inset 0 -5px 0 var(--desk-shade), 0 8px 0 #0005;
-}
-.pod .laptop {
-  position: absolute; left: 6px; bottom: 38px; width: 40px; height: 26px;
-  background: #cfd2d8; border-radius: 3px 3px 0 0; border: 3px solid #9ea3ad; border-bottom: 0;
-}
-.pod .laptop::after { /* logo / lueur de l'écran */
-  content: ''; position: absolute; left: 50%; top: 50%; width: 10px; height: 10px; margin: -5px 0 0 -5px;
-  background: var(--glow, #999); border-radius: 2px; box-shadow: 0 0 10px var(--glow, transparent);
-}
-.pod .mug { position: absolute; right: 22px; bottom: 38px; width: 10px; height: 11px; background: #f3ece2; border-radius: 0 0 2px 2px; }
-.pod .mug::after { content: ''; position: absolute; right: -4px; top: 2px; width: 4px; height: 5px; border: 2px solid #f3ece2; border-left: 0; }
-.pod .plate {
-  margin-top: 12px; text-align: center; line-height: 1.25;
-}
-.pod .plate .name { font: 600 15px 'Pixelify Sans', monospace; }
-.pod .plate .proj { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pod:hover .desk, .pod.selected .desk { outline: 3px solid var(--accent); outline-offset: 3px; }
-
-.bubble {
-  position: absolute; left: 50%; top: 0; z-index: 3;
-  transform: translateX(-50%);
-  max-width: 200px; width: max-content;
-  background: #fff; color: #231d2b;
-  font: 13px/1.2 'Pixelify Sans', monospace;
-  padding: 6px 9px; border-radius: 6px;
-  box-shadow: 0 3px 0 #0005;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.bubble::after { content: ''; position: absolute; left: 50%; bottom: -6px; margin-left: -6px; border: 6px solid transparent; border-bottom: 0; border-top-color: #fff; }
-.state-waiting .bubble { background: var(--warn); animation: nudge 1.2s ease-in-out infinite; }
-.state-waiting .bubble::after { border-top-color: var(--warn); }
-.state-waiting.kind-ask .bubble { background: var(--accent); color: #241a12; font-weight: 600; }
-.state-waiting.kind-ask .bubble::after { border-top-color: var(--accent); }
-.state-waiting.kind-ask .desk { outline: 3px dashed var(--accent); outline-offset: 3px; }
-.team-busy .bubble { background: #fff; animation: none; }
-.team-busy .bubble::after { border-top-color: #fff; }
-.state-blocked .bubble { background: var(--bad); color: #fff; }
-.state-blocked .bubble::after { border-top-color: var(--bad); }
-.kind-think .bubble { border-radius: 14px; }
-@keyframes nudge { 50% { transform: translateX(-50%) translateY(-4px); } }
-
-/* animations du perso */
-/* « > .char » : l'état du chef ne doit pas déteindre sur ses stagiaires */
-.state-working > .char { animation: bob .5s steps(2) infinite; }
-.state-working.kind-think > .char, .state-working.kind-read > .char { animation: bob 1.6s steps(2) infinite; }
-.state-working > .char .arm-l { animation: type .22s steps(2) infinite; }
-.state-working > .char .arm-r { animation: type .22s steps(2) infinite reverse; }
-.state-working.kind-read > .char .arm-l, .state-working.kind-read > .char .arm-r,
-.state-working.kind-think > .char .arm-l, .state-working.kind-think > .char .arm-r { animation: none; }
-@keyframes bob { 50% { transform: translateY(2px); } }
-@keyframes type { 50% { transform: translateY(-1px); } }
-.hand-up { display: none; }
-.state-waiting:not(.team-busy) > .char .hand-up { display: inline; animation: wave .8s steps(2) infinite; }
-.state-waiting:not(.team-busy) > .char .arm-r { display: none; }
-@keyframes wave { 50% { transform: translateY(-.5px); } }
-.state-blocked > .char { filter: saturate(.6); }
-
-.kind-code     { --glow: var(--code); }
-.kind-terminal { --glow: var(--term); }
-.kind-web      { --glow: var(--web); }
-.kind-read     { --glow: var(--read); }
-.kind-think    { --glow: var(--think); }
-.kind-delegate { --glow: var(--accent); }
-.kind-plan     { --glow: var(--warn); }
-.kind-ask      { --glow: var(--warn); }
-.kind-tool     { --glow: var(--accent); }
-
-
-/* ---------- coin café ---------- */
-.coffee {
-  width: 360px; flex-shrink: 0; padding: 40px 36px 70px 46px;
-  /* carrelage */
-  background-color: #4a3a2e;
-  background-image:
-    linear-gradient(45deg, #45362b 25%, transparent 25%, transparent 75%, #45362b 75%),
-    linear-gradient(45deg, #45362b 25%, transparent 25%, transparent 75%, #45362b 75%);
-  background-size: 40px 40px; background-position: 0 0, 20px 20px;
-}
-.cooler { width: 26px; height: 64px; position: relative; background: #d9dde4; border-radius: 3px 3px 0 0; box-shadow: inset -4px 0 0 #b8bdc6; }
-.cooler::before { content: ''; position: absolute; left: 3px; top: -30px; width: 20px; height: 32px; background: #8ec9ee; border-radius: 6px 6px 2px 2px; opacity: .85; }
-.rug { margin-top: 6px; padding: 18px 14px; border-radius: 12px; background: #7a3f3a; box-shadow: inset 0 0 0 5px #8f4f48, inset 0 0 0 7px #6b3531; min-height: 140px; }
-.sofa { position: absolute; left: 40px; right: 40px; bottom: 18px; height: 34px; border-radius: 10px 10px 4px 4px; background: #5b6fa8; box-shadow: inset 0 10px 0 #6f84bf, 0 6px 0 #0005; }
-.plant { width: 30px; height: 44px; position: relative; }
-.plant::before { content: ''; position: absolute; bottom: 0; left: 5px; width: 20px; height: 16px; background: #b5643c; border-radius: 0 0 4px 4px; }
-.plant::after { content: ''; position: absolute; bottom: 14px; left: 0; width: 30px; height: 30px; background: #5fa85a; border-radius: 50% 50% 40% 40%; box-shadow: inset -5px -4px 0 #4a8a47; }
-.lounge { display: grid; grid-template-columns: repeat(auto-fill, minmax(62px, 1fr)); gap: 14px 6px; }
-.idler { min-width: 0; text-align: center; cursor: pointer; animation: pop-in .35s; }
-.idler svg { width: 40px; image-rendering: pixelated; animation: sway 3s ease-in-out infinite; transform-origin: 50% 100%; }
-.idler:nth-child(2n) svg { animation-delay: -1.3s; }
-@keyframes sway { 50% { transform: rotate(-3deg); } }
-.idler .name { font: 13px 'Pixelify Sans', monospace; }
-.idler .proj { font-size: 11px; color: #f0dcd2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.idler:hover svg, .idler.selected svg { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
-
 /* ---------- commandes de vue ---------- */
 .cam-ctrl {
   position: absolute; left: 16px; bottom: 16px; z-index: 5; display: flex; gap: 2px; padding: 3px;
@@ -484,81 +303,22 @@ select { cursor: pointer; }
   font: 600 18px 'Pixelify Sans', monospace; color: var(--accent);
 }
 
-/* ---------- cloisons vitrées du coin café ---------- */
-.partition {
-  position: absolute; z-index: 1;
-  background: #9fc6e655; /* verre */
-  border: 3px solid #5a5068; box-shadow: 0 4px 0 #0003;
+
+/* ---------- boutons d'en-tête : notifications, thème ---------- */
+.icons { display: flex; gap: 4px; }
+.icon-btn { width: 34px; height: 34px; border: 0; border-radius: 8px; background: #0003; color: var(--ink); font-size: 16px; line-height: 1; cursor: pointer; }
+.icon-btn:hover { background: #0005; }
+
+/* ---------- thème clair (bouton ☀ de l'en-tête ; sombre par défaut) ---------- */
+:root[data-theme="light"] {
+  --bg: #f4efe8; --wall: #ebe4da; --panel: #fbf8f3; --ink: #2a2333; --muted: #786e84; --line: #d9d0c4;
 }
-.p-top, .p-bottom { left: 0; right: 0; height: 12px; background-image: repeating-linear-gradient(90deg, transparent 0 58px, #5a5068 58px 62px); }
-.p-top { top: 0; }
-.p-bottom { bottom: 0; }
-.p-left, .p-right { width: 12px; background-image: repeating-linear-gradient(180deg, transparent 0 58px, #5a5068 58px 62px); }
-.p-left { left: 0; }
-.p-right { right: 0; top: 0; bottom: 0; }
-.p-left-a { top: 0; height: 34%; }
-.p-left-b { bottom: 0; height: 40%; } /* entre les deux : la porte */
-.doormat { position: absolute; left: -22px; top: calc(34% + 24%  - 64px); width: 22px; height: 46px; border-radius: 3px; background: #6b4a3a; box-shadow: inset 0 0 0 3px #7d5747; }
-.counter {
-  display: flex; align-items: flex-end; gap: 14px; margin-bottom: 18px; padding: 0 12px 10px;
-  border-bottom: 14px solid #8a6242; box-shadow: 0 6px 0 #0004; border-radius: 0 0 3px 3px;
-}
-.counter .m { width: 54px; height: 76px; background: #c6c9d1; border-radius: 4px 4px 0 0; position: relative; box-shadow: inset -6px 0 0 #a2a6b0; }
-.counter .m::before { content: ''; position: absolute; left: 10px; top: 10px; width: 26px; height: 16px; background: #29303b; border-radius: 2px; box-shadow: inset 0 0 0 2px #1c2128; }
-.counter .m::after { content: ''; position: absolute; left: 18px; bottom: 6px; width: 12px; height: 14px; background: #f3ece2; border-radius: 0 0 2px 2px; }
-
-/* ---------- mobilier de l'open space ---------- */
-.furniture { position: absolute; }
-.printer { right: 120px; top: 26px; width: 56px; height: 38px; border-radius: 4px; background: #d9dde4; box-shadow: inset 0 -8px 0 #b8bdc6, 0 5px 0 #0004; }
-.printer::before { content: ''; position: absolute; left: 10px; right: 10px; top: -8px; height: 10px; background: #f3ece2; border-radius: 1px; }
-.shelf { right: 200px; top: 22px; width: 90px; height: 44px; border-radius: 3px; background: #7d5236; box-shadow: 0 5px 0 #0004;
-  background-image: linear-gradient(90deg, #e8915b 0 10px, #6fb3f2 10px 18px, #7bd389 18px 30px, transparent 30px 44px, #c59af2 44px 54px, #f2c14e 54px 64px, transparent 64px),
-    linear-gradient(#5a3a26 0 0); background-size: 100% 16px, 100% 4px; background-position: 6px 4px, 0 22px; background-repeat: no-repeat; }
-
-/* ---------- murs de l'open space ---------- */
-.room-open { padding-top: 70px; padding-left: 52px; }
-.wall { position: absolute; z-index: 1; background: #221d2b; box-shadow: 0 0 0 2px #2f2839; } /* plus sombre que le parquet pour se détacher */
-.w-top { left: 0; right: 0; top: 0; height: 46px; display: flex; justify-content: space-around; align-items: center; padding: 0 60px; box-shadow: 0 6px 0 #00000040; }
-.w-top .win { position: relative; width: 96px; height: 28px; border: 4px solid #5a5068; border-radius: 2px; background: linear-gradient(180deg, #7fb2e5, #c3dff4); }
-.w-top .win::after { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 3px; margin-left: -1.5px; background: #5a5068; }
-.w-left { left: 0; top: 0; bottom: 0; width: 16px; }
-.w-bottom { bottom: 0; height: 16px; }
-.w-bottom-a { left: 0; width: 42%; }
-.w-bottom-b { right: 0; width: calc(58% - 120px); }
-.entrance { position: absolute; bottom: -2px; left: 42%; width: 120px; height: 18px; z-index: 1; }
-.entrance span { position: absolute; left: 50%; bottom: -22px; transform: translateX(-50%); font: 600 11px 'Pixelify Sans', monospace; letter-spacing: 2px; color: var(--muted); }
-.entrance::before { content: ''; position: absolute; left: 20px; right: 20px; bottom: 16px; height: 22px; border-radius: 3px; background: #6b4a3a; box-shadow: inset 0 0 0 3px #7d5747; }
-.room-open .printer, .room-open .shelf { top: 54px; }
-
-/* ---------- colonne de droite : salle de réunion au-dessus du coin café ---------- */
-.side { display: flex; flex-direction: column; width: 360px; flex-shrink: 0; }
-.side .coffee { flex: 1; }
-.meeting {
-  padding: 40px 36px 36px 46px;
-  background: #34404f; /* moquette bleue */
-  background-image: radial-gradient(#ffffff0a 1px, transparent 1px); background-size: 8px 8px;
-}
-.meeting .p-bottom { display: none; }
-.zone-note { font: 12px 'Pixelify Sans', monospace; color: var(--accent); }
-.meeting-table { position: relative; padding-top: 8px; }
-.board { height: 46px; margin: 0 20px 14px; border-radius: 3px; background: #f3ece2; border: 4px solid #8a8fa0; box-shadow: 0 4px 0 #0004;
-  background-image: linear-gradient(#e8915b 0 0), linear-gradient(#6fb3f2 0 0), linear-gradient(#7bd389 0 0);
-  background-size: 40% 3px, 55% 3px, 30% 3px; background-position: 10px 8px, 10px 18px, 10px 28px; background-repeat: no-repeat; }
-.seats { position: relative; z-index: 2; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 8px; min-height: 0; }
-.table-top { height: 30px; margin: -8px 6px 0; border-radius: 16px; background: #8a6242; box-shadow: inset 0 6px 0 #a3774f, 0 6px 0 #0004; }
-.meeting-empty { margin: 10px 0 0; text-align: center; font: 12px 'Pixelify Sans', monospace; color: #9fb0c8; }
-.meeting:has(.seat) .meeting-empty { display: none; }
-.seat { position: relative; width: 74px; padding-top: 24px; text-align: center; cursor: pointer; user-select: none; animation: pop-in .35s; }
-.seat svg { display: block; width: 36px; margin: 0 auto; image-rendering: pixelated; }
-.seat .seat-bubble { position: absolute; left: 50%; top: 0; transform: translateX(-50%); padding: 1px 6px; border-radius: 8px; background: var(--accent); color: #241a12; font: 600 11px 'Pixelify Sans', monospace; white-space: nowrap; box-shadow: 0 2px 0 #0005; animation: nudge 1.2s ease-in-out infinite; }
-.seat.state-blocked .seat-bubble { background: var(--bad); color: #fff; }
-.seat .name { font: 12px 'Pixelify Sans', monospace; margin-top: 2px; }
-.seat .proj { font-size: 10.5px; color: #9fb0c8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.seat:hover svg, .seat.selected svg { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
-
-/* îlot dont le chef est en réunion ou au café : bureau vide, chaise libre */
-.pod.away .char { visibility: hidden; }
-.pod.away .bubble { background: #ffffffcc; color: #6b6077; animation: none; }
-.pod.away .bubble::after { border-top-color: #ffffffcc; }
-.pod.away .laptop::after { background: #555; box-shadow: none; } /* écran en veille */
-
+:root[data-theme="light"] header { border-bottom: 1px solid #0001; }
+:root[data-theme="light"] .ticker { background: #e6dfd4; border-top: 1px solid #0001; }
+:root[data-theme="light"] .panel { border-left: 1px solid #0002; }
+:root[data-theme="light"] .modal { border: 1px solid #0002; }
+:root[data-theme="light"] .cam-ctrl { background: #fbf8f3ee; border: 1px solid #0002; box-shadow: 0 3px 10px #0002; }
+:root[data-theme="light"] .cam-hint { background: #fbf8f3dd; }
+:root[data-theme="light"] .log .e.read { border-color: #b3a9be; color: #5d5468; }
+:root[data-theme="light"] .dragging::after { background: #fbf8f3d9; }
+:root[data-theme="light"] .icon-btn, :root[data-theme="light"] .stat { background: #0000000d; }

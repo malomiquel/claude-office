@@ -13,6 +13,7 @@ d'en recruter, de les virer et de répondre à leurs questions. Interface et com
   `/health`, ou le relance si une autre version tourne et qu'aucun agent du bureau ne travaille. Journal :
   `~/.claude-office/server.log`.
 - À la main : `node server.mjs` (Node 18+, aucune dépendance, pas de build), puis http://localhost:4747.
+- Tests : `node --test` à la racine (`test/*.test.mjs`, `node:test`, données dans un `CLAUDE_OFFICE_HOME` temporaire).
 - Version : `.claude-plugin/plugin.json`. L'augmenter à chaque publication : c'est ce qui relance les serveurs.
 - macOS et Linux. Spécifique à l'OS : sélecteur de dossier (`osascript` / `zenity` / `kdialog`, sinon saisie à la main),
   ouverture du navigateur (`open` / `xdg-open`), managed settings (`allow-channel.sh`), port 80 (`setup-port80.sh`, macOS).
@@ -27,17 +28,21 @@ lib/snapshot.mjs      état diffusé en SSE (/events), refresh toutes les 1,5 s
 lib/live-asks.mjs     questions tenues en direct par le hook PreToolUse
 lib/workers.mjs       agents pilotés par le bureau (claude -p en entrée stream-json, gardés ouverts), sélecteur Finder
 lib/dismissed.mjs     agents virés (~/.claude-office/dismissed.json)
+lib/breaks.mjs        pauses café données à la main (~/.claude-office/breaks.json), levées dès que le transcript rebouge
 lib/permissions.mjs   sessions qui attendent ta permission (hook Notification -> /hook/notify)
 lib/channels.mjs      sessions reliées par le channel « office » (channel/office-channel.mjs), rattachées par pid
 lib/quota.mjs         quota 5 h / semaine (~/.claude-office/rate-limits.json, écrit par scripts/statusline-tap.mjs)
 lib/uploads.mjs       fichiers joints (images, PDF, texte) dans ~/.claude-office/uploads/, passés à l'agent par chemin + --add-dir
 scripts/              ensure-server, statusline-tap, claude-office.sh (lanceur avec channel), allow-channel.sh, setup-port80.sh
-public/index.html     structure ; public/style.css ; public/js/*.js (modules ES, sans build)
+public/index.html     structure ; public/style.css (interface) ; public/office.css (scène) ; public/js/*.js (modules ES, sans build)
 ```
 
 Côté page : `state.js` porte l'état partagé et `rerender()` ; `main.js` branche le SSE et les modules.
 `office.js` dessine l'open space (un îlot par équipe : bureau du chef + petits bureaux des sous-agents ; salle de réunion pour ceux qui attendent ta réponse, coin café pour ceux en pause), `camera.js` la vue (sol infini, déplacement, zoom), `panel.js` le panneau, `ask.js` la carte de question, `hire.js` le recrutement,
-`attachments.js` les fichiers joints, `markdown.js` le rendu des messages (tableaux compris), `people.js` noms et sprites.
+`attachments.js` les fichiers joints, `markdown.js` le rendu des messages (tableaux compris), `people.js` noms et sprites,
+`alerts.js` les notifications du navigateur (question / permission, seulement quand la page n'a pas le focus),
+`ambiance.js` la lumière des fenêtres selon l'heure (`data-time`) et le thème clair / sombre (`data-theme`, appliqué dès le `<head>`).
+Raccourcis (`main.js`) : Tab / Maj+Tab agent suivant qui t'attend, 1-9 un bureau, N recruter, M écrire, Échap fermer.
 
 ## Sources de données
 
@@ -45,7 +50,7 @@ Côté page : `state.js` porte l'état partagé et `rerender()` ; `main.js` bran
   (+ `.meta.json` avec `agentType` et `description`). Lecture incrémentale : lu une fois en entier, puis seulement
   les lignes ajoutées. Seules les 60 dernières entrées sont gardées et envoyées : pas d'historique complet (retiré à la
   demande de l'utilisateur, ne pas le remettre).
-- **Données** : `~/.claude-office/` (`CLAUDE_OFFICE_HOME`) : `token`, `dismissed.json`, `hired.json`, `uploads/`,
+- **Données** : `~/.claude-office/` (`CLAUDE_OFFICE_HOME`) : `token`, `dismissed.json`, `breaks.json`, `hired.json`, `uploads/`,
   `rate-limits.json`, `server.log`, `bin/claude-office`. Jamais dans le dossier du plugin, qui change à chaque version.
 - **Channel « office »** (préversion Claude Code) : `channel/office-channel.mjs`, serveur MCP stdio sans dépendance,
   déclaré dans `plugin.json`. Lancé par `~/.claude-office/bin/claude-office` (copie de `scripts/claude-office.sh`,
@@ -69,6 +74,8 @@ Côté page : `state.js` porte l'état partagé et `rerender()` ; `main.js` bran
 - **Sessions masquées** : une session jamais ouverte dans un terminal (que des `entrypoint: sdk-cli`) et absente de
   `~/.claude-office/hired.json` (agents lancés par le bureau) est une automatisation (ex. le hook de résumé du plugin ECC lance
   `claude -p` après chaque réponse) : elle n'apparaît pas dans l'open space.
+- **Consommation** : `used` (entrée, sortie, cache lu / écrit) cumulé par session. Un message assistant est écrit en plusieurs
+  lignes avec le même `message.id` et un usage qui grossit : on remplace celui du message en cours, sans l'additionner.
 - **Fin d'un sous-agent** : un `tool_use` nommé `SubagentHandback` (pas un simple message de fin).
 - **Interruption** (Échap) : message user `[Request interrupted by user…]` -> sous-agent `done` (il quitte le bureau),
   session principale `waiting` « interrompu ». Sans ça, un sous-agent arrêté restait « au travail » 30 min.
@@ -110,8 +117,17 @@ Côté page : `state.js` porte l'état partagé et `rerender()` ; `main.js` bran
 - **Un îlot ne quitte jamais l'open space** tant que sa session est là : en réunion ou au café, son bureau reste vide
   (`.pod.away`) et le perso apparaît ailleurs (map `awayEls`). Les îlots suivent l'ordre des ids (`keepOrder`) :
   sinon les bureaux bougent quand quelqu'un part ou revient, et au rafraîchissement.
+- **Marche** : quand un chef change de zone, `office.js` note la position de son perso avant de toucher au DOM, puis un
+  `.walker` traverse `#world` (coordonnées monde = écran / zoom de la caméra) ; la place d'arrivée garde `.arriving`
+  (perso caché) jusqu'à la fin. `className` est réécrit à chaque rendu : remettre `.arriving` tant que `walkers` a l'id.
 - Les éléments du bureau sont réutilisés d'un rendu à l'autre (map `els` dans `office.js`) pour ne pas relancer
   les animations ; le panneau compare son HTML via `dataset.html` pour garder les sélections en cours.
+
+- **Interrompre une session de terminal depuis le bureau : impossible proprement.** Un `SIGINT` ferme la session
+  interactive (testé), et ni les channels ni les hooks ne savent interrompre un tour de l'extérieur. Stop ne vaut que
+  pour les agents lancés par le bureau.
+- `allow-channel.sh` ne remplace jamais des managed settings existants : il fusionne (Node, sauvegarde `.bak-claude-office`,
+  état d'origine `.avant-claude-office`) et `--uninstall` ne retire que notre entrée. Sous sudo, passer `NODE=…`.
 
 ## Conventions
 

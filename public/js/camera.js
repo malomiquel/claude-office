@@ -53,7 +53,7 @@ export function fit({ smooth = true } = {}) {
 }
 
 // cadre un élément de la carte (un bureau) au centre, zoomé
-function focusOn(el) {
+export function focusOn(el) {
   const vr = viewport.getBoundingClientRect();
   const r = el.getBoundingClientRect();
   // centre de l'élément en coordonnées de la carte

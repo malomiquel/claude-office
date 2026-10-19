@@ -32,6 +32,11 @@ export function closePanel() {
   rerender();
 }
 
+const usedTotal = (u) => (u ? u.input + u.output + u.cacheRead + u.cacheWrite : 0);
+const fmtTokens = (n) => (n >= 1e6 ? `${(n / 1e6).toFixed(n >= 1e7 ? 0 : 1)}M` : n >= 1000 ? `${Math.round(n / 1000)}k` : String(n));
+// détail au survol : la plupart des tokens sont relus depuis le cache, beaucoup moins chers
+const usedDetail = (u) => `${fmtTokens(u.cacheRead)} relus en cache · ${fmtTokens(u.cacheWrite)} mis en cache · ${fmtTokens(u.input)} lus · ${fmtTokens(u.output)} écrits`;
+
 function renderFacts(a) {
   const statusText = a.state === 'working' ? `${STATE_FR[a.state]} · ${plain(a.activity)}`
     : a.ask?.type === 'plan' ? 'Attend que tu valides son plan'
@@ -40,11 +45,12 @@ function renderFacts(a) {
     a.branch && a.branch !== 'HEAD' ? ['Branche', a.branch] : null,
     ['Modèle', (a.model || '?').replace(/^claude-/, '')],
     a.tokens ? ['Contexte', `${Math.round(a.tokens / 1000)}k`] : null,
+    usedTotal(a.used) ? ['Consommé', fmtTokens(usedTotal(a.used))] : null,
     ['Session', a.id.slice(0, 8)],
   ].filter(Boolean);
   const html = `<p class="mission${missionOpen ? ' full' : ''}" title="Cliquer pour tout lire">${esc(plain(a.title))}</p>
     <div class="status"><i style="background:${STATE_COLOR[a.state]}"></i>${esc(statusText)}</div>
-    <div class="chips">${chips.map(([k, v]) => `<span class="chip" title="${esc(k === 'Session' ? a.id : v)}">${k} <b>${esc(v)}</b></span>`).join('')}</div>`;
+    <div class="chips">${chips.map(([k, v]) => `<span class="chip" title="${esc(k === 'Session' ? a.id : k === 'Consommé' ? usedDetail(a.used) : v)}">${k} <b>${esc(v)}</b></span>`).join('')}</div>`;
   const box = $('pFacts');
   if (box.dataset.html === html) return;
   box.dataset.html = html;
@@ -116,6 +122,11 @@ export function renderPanel() {
   renderAsk(a);
   $('pCompose').hidden = !!a.parent || !!a.ask;
   $('pFire').hidden = !a.busy;
+  // pause café à la main : seulement pour un chef qui ne travaille pas et n'attend rien de toi
+  const c = $('pCoffee');
+  c.hidden = !!a.parent || !(a.onBreak || a.state === 'waiting' || a.state === 'done') || !!a.ask || a.busy;
+  c.textContent = a.onBreak ? '↩ Au bureau' : '☕ Pause';
+  c.title = a.onBreak ? 'Le rappeler à son bureau' : 'L\'envoyer au coin café : il y reste jusqu\'à ce qu\'il se remette au travail';
   renderSend(a);
   $('pHint').innerHTML = a.channel
     ? '🔗 <b>Reliée par le channel</b> : ton message arrive dans son terminal, comme si tu l\'avais tapé là-bas.'
@@ -155,6 +166,10 @@ export function initPanel() {
   $('pSend').onclick = () => ($('pSend').dataset.takeover ? confirmClick($('pSend'), () => send(true)) : send(false));
   $('pMsg').onkeydown = (e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) $('pSend').click(); };
   $('pFire').onclick = async () => { try { await post('fire', { id: state.selected }); } catch (e) { showErr(e.message); } };
+  $('pCoffee').onclick = async () => {
+    const a = findAgent(state.selected);
+    try { await post('coffee', { id: state.selected, on: !a?.onBreak }); } catch (e) { showErr(e.message); }
+  };
 
   $('pDismiss').onclick = () => confirmClick($('pDismiss'), async () => {
     try { await post('dismiss', { id: state.selected }); closePanel(); }

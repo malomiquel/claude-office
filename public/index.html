@@ -5,9 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="office-token" content="__TOKEN__">
 <title>Claude Office</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'><rect x='4' y='1' width='8' height='3' fill='%233b2a20'/><rect x='3' y='2' width='1' height='4' fill='%233b2a20'/><rect x='12' y='2' width='1' height='4' fill='%233b2a20'/><rect x='4' y='4' width='8' height='5' fill='%23f1c27d'/><rect x='6' y='6' width='1' height='1' fill='%23231d2b'/><rect x='9' y='6' width='1' height='1' fill='%23231d2b'/><rect x='3' y='9' width='10' height='3' fill='%23e8915b'/><rect x='9' y='8' width='5' height='3' fill='%23cfd2d8'/><rect x='11' y='9' width='1' height='1' fill='%237bd389'/><rect x='1' y='11' width='14' height='2' fill='%23b98a62'/><rect x='1' y='13' width='14' height='2' fill='%238a6244'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="/office.css">
+<script>try { document.documentElement.dataset.theme = localStorage.getItem('office-theme') || 'dark'; } catch {}</script>
 <script type="module" src="/js/main.js"></script>
 </head>
 <body>
@@ -19,7 +22,11 @@
     <div class="gauge" id="qFive"><div class="clock"><i class="hand"></i></div><div class="q-txt"><b></b><span></span></div></div>
     <div class="gauge" id="qWeek"><div class="clock"><i class="hand"></i></div><div class="q-txt"><b></b><span></span></div></div>
   </div>
-  <button class="btn" id="hireBtn">+ Recruter</button>
+  <div class="icons">
+    <button type="button" class="icon-btn" id="alertBtn">🔕</button>
+    <button type="button" class="icon-btn" id="themeBtn">☀</button>
+  </div>
+  <button class="btn" id="hireBtn" title="Recruter (N)">+ Recruter</button>
 </header>
 
 <main class="viewport" id="viewport">
@@ -79,7 +86,7 @@
     <button type="button" id="camIn" title="Zoomer (+)">+</button>
     <button type="button" id="camFit" title="Tout voir (0)">⤢</button>
   </div>
-  <div class="cam-hint" id="camHint">Glisse pour te déplacer · pince ou ⌘ + molette pour zoomer · double-clic sur un bureau</div>
+  <div class="cam-hint" id="camHint">Glisse pour te déplacer · ⌘ + molette pour zoomer · Tab : agent suivant qui t'attend · 1-9 : un bureau · N : recruter</div>
 </main>
 
 <div class="ticker" id="ticker"><b>EN DIRECT</b></div>
@@ -89,6 +96,7 @@
     <span id="pAvatar"></span>
     <div><h2 id="pName"></h2><div class="sub" id="pSub"></div></div>
     <div class="head-actions">
+      <button class="btn ghost sm" id="pCoffee" hidden>☕ Pause</button>
       <button class="btn danger sm" id="pDismiss">Virer</button>
       <button class="close" id="pClose" aria-label="Fermer">✕</button>
     </div>

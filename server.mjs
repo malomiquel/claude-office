@@ -11,6 +11,7 @@ import { PORT, DIRECT_PORT, PF_PORT, HOST, TOKEN, PUBLIC_DIR, REFRESH_MS, VERSIO
 import { expandHome } from './lib/text.mjs';
 import { getSnapshot, refresh, addClient, pingClients } from './lib/snapshot.mjs';
 import { dismiss } from './lib/dismissed.mjs';
+import { setBreak } from './lib/breaks.mjs';
 import { getAsk, waitForAnswer, hookAnswer, addRelay } from './lib/live-asks.mjs';
 import { startWorker, restartWorker, sendToWorker, isRunning, isBusy, workerMode, stopWorker, pickFolder } from './lib/workers.mjs';
 import { saveFiles, withFiles } from './lib/uploads.mjs';
@@ -83,6 +84,15 @@ const api = {
   },
   async fire(body) {
     if (!stopWorker(body.id)) return [404, { error: 'aucun process lancé par le bureau pour cet agent' }];
+    return [200, { ok: true }];
+  },
+  // l'envoyer au coin café (on: true) ou le rappeler à son bureau (on: false)
+  async coffee(body) {
+    const a = getSnapshot().agents.find((x) => x.id === body.id && !x.parent);
+    if (!a) return [404, { error: 'employé introuvable' }];
+    if (body.on && (a.busy || a.state === 'working' || a.state === 'blocked' || a.ask)) return [409, { error: 'il est occupé : attends qu\'il ait fini' }];
+    setBreak(a.id, !!body.on);
+    await refresh();
     return [200, { ok: true }];
   },
   async dismiss(body) {
