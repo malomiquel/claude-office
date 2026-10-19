@@ -6,7 +6,8 @@ import { who, sprite } from './people.js';
 import { select } from './panel.js';
 
 const ICON = { code: '⌨️', terminal: '🖥️', web: '🌐', read: '📄', think: '💭', delegate: '📣', plan: '📋', ask: '✋', tool: '🔧', talk: '💬', done: '✅' };
-const els = new Map(); // id -> élément affiché (réutilisé pour ne pas relancer les animations)
+const els = new Map(); // id -> îlot de l'open space (réutilisé pour ne pas relancer les animations)
+const awayEls = new Map(); // id -> sa place en salle de réunion ou au coin café
 
 // sous-agent présent à son petit bureau tant qu'il n'a pas rendu son rapport
 export const busyIntern = (i) => i.state === 'working' || i.state === 'blocked';
@@ -94,60 +95,83 @@ function renderStats(bosses, interns) {
   document.title = count('ask') ? `❓ (${count('ask')}) Claude Office` : pending ? `(${pending}) Claude Office` : 'Claude Office';
 }
 
+// où est le perso : à son bureau, en salle de réunion (il t'attend et son équipe a fini) ou au café (en pause)
+function zoneOf(a, team) {
+  if (a.state === 'coffee') return 'lounge';
+  return (isAsk(a) || a.state === 'blocked') && !team ? 'meeting' : 'desk';
+}
+
+// range les éléments d'un conteneur dans l'ordre des chefs (ordre des ids), sans toucher à ceux déjà en place
+function keepOrder(box, bosses, map) {
+  let prev = null;
+  for (const a of bosses) {
+    const el = map.get(a.id);
+    if (el?.parentNode !== box) continue;
+    const want = prev ? prev.nextElementSibling : box.firstElementChild;
+    if (want !== el) box.insertBefore(el, want);
+    prev = el;
+  }
+}
+
+const leave = (el) => { el.classList.add('leaving'); setTimeout(() => el.remove(), 700); };
+
 export function renderOffice() {
   const bosses = state.agents.filter((a) => !a.parent).sort((x, y) => x.id.localeCompare(y.id));
   const interns = state.agents.filter((a) => a.parent);
   const seen = new Set();
 
   for (const a of bosses) {
-    const team = interns.filter((i) => i.parent === a.id && busyIntern(i)).length;
-    // t'attend (question, plan, permission) et son équipe a fini : il passe en salle de réunion
-    const waitsForYou = (isAsk(a) || a.state === 'blocked') && !team;
-    const zone = a.state === 'coffee' ? 'lounge' : waitsForYou ? 'meeting' : 'desk';
-    let el = els.get(a.id);
-    if (!el || el.dataset.zone !== zone) {
-      el?.remove();
-      el = zone === 'desk' ? teamEl(a) : zone === 'meeting' ? seatEl(a) : idlerEl(a);
-      el.dataset.zone = zone;
-      els.set(a.id, el);
-    }
-    const parent = { desk: $('openspace'), meeting: $('meeting'), lounge: $('lounge') }[zone];
-    if (el.parentNode !== parent) parent.appendChild(el);
     seen.add(a.id);
+    const team = interns.filter((i) => i.parent === a.id && busyIntern(i)).length;
+    const zone = zoneOf(a, team);
     const cls = `state-${a.state} kind-${a.kind}${state.selected === a.id ? ' selected' : ''}`;
-    el.querySelector('.name').textContent = who(a.id).name;
-    if (zone === 'lounge') {
-      el.className = `idler ${cls}`;
-      el.querySelector('.proj').textContent = a.project;
-      el.title = a.title;
-      continue;
-    }
-    if (zone === 'meeting') {
-      el.className = `seat ${cls}`;
-      el.querySelector('.proj').textContent = a.project;
-      el.querySelector('.seat-bubble').textContent = a.state === 'blocked' ? '🔐 permission' : a.ask?.type === 'plan' ? '📋 plan' : '❓ question';
-      el.title = `${a.title}\n→ ${bubbleText(a)}`;
-      continue;
-    }
-    const pod = el.querySelector('.pod');
-    pod.className = `pod boss ${cls}${a.state === 'waiting' && a.kind !== 'ask' && team > 0 ? ' team-busy' : ''}`;
+
+    // l'îlot reste toujours dans l'open space : parti en réunion ou au café, son bureau reste vide
+    let island = els.get(a.id);
+    if (!island) { island = teamEl(a); els.set(a.id, island); $('openspace').appendChild(island); }
+    const away = zone !== 'desk';
+    island.classList.toggle('away', away);
+    island.querySelector('.name').textContent = who(a.id).name;
+    island.querySelector('.team-sign').textContent = a.project + (a.channel ? ' 🔗' : ''); // 🔗 : reliée par le channel
+    const pod = island.querySelector('.pod');
+    pod.className = away ? `pod boss away${state.selected === a.id ? ' selected' : ''}`
+      : `pod boss ${cls}${a.state === 'waiting' && a.kind !== 'ask' && team > 0 ? ' team-busy' : ''}`;
     pod.title = a.title;
-    el.querySelector('.team-sign').textContent = a.project + (a.channel ? ' 🔗' : ''); // 🔗 : reliée par le channel
     const b = pod.querySelector('.bubble');
-    const t = bubbleText(a, team);
+    const t = zone === 'meeting' ? '📋 En salle de réunion' : zone === 'lounge' ? '☕ En pause café' : bubbleText(a, team);
     if (b.textContent !== t) b.textContent = t;
-    renderMinis(el, a, interns);
+    renderMinis(island, a, interns);
+
+    // sa présence ailleurs : une place à la table de réunion, ou au coin café
+    let other = awayEls.get(a.id);
+    if (other && other.dataset.zone !== zone) { other.remove(); awayEls.delete(a.id); other = null; }
+    if (!away) continue;
+    if (!other) {
+      other = zone === 'meeting' ? seatEl(a) : idlerEl(a);
+      other.dataset.zone = zone;
+      awayEls.set(a.id, other);
+      (zone === 'meeting' ? $('meeting') : $('lounge')).appendChild(other);
+    }
+    other.className = `${zone === 'meeting' ? 'seat' : 'idler'} ${cls}`;
+    other.querySelector('.name').textContent = who(a.id).name;
+    other.querySelector('.proj').textContent = a.project;
+    if (zone === 'meeting') {
+      other.querySelector('.seat-bubble').textContent = a.state === 'blocked' ? '🔐 permission' : a.ask?.type === 'plan' ? '📋 plan' : '❓ question';
+      other.title = `${a.title}\n→ ${bubbleText(a)}`;
+    } else other.title = a.title;
   }
-  // départ : animation du carton puis retrait
-  for (const [id, el] of els) if (!seen.has(id)) {
-    els.delete(id);
-    el.classList.add('leaving');
-    setTimeout(() => el.remove(), 700);
-  }
+
+  keepOrder($('openspace'), bosses, els);
+  keepOrder($('meeting'), bosses, awayEls);
+  keepOrder($('lounge'), bosses, awayEls);
+
+  // départ du bureau (viré, ou session terminée depuis longtemps) : animation du carton puis retrait
+  for (const [id, el] of els) if (!seen.has(id)) { els.delete(id); leave(el); }
+  for (const [id, el] of awayEls) if (!seen.has(id)) { awayEls.delete(id); el.remove(); }
 
   $('fireAll').hidden = !bosses.some((a) => a.state === 'coffee');
   const empty = $('openspace').querySelector('.empty');
-  if (![...els.values()].some((el) => el.dataset.zone === 'desk')) {
+  if (!els.size) {
     if (!empty) $('openspace').insertAdjacentHTML('beforeend', `<div class="empty">Personne au bureau pour l'instant. Lance <code>claude</code> dans un terminal, ou clique sur « Recruter ».</div>`);
   } else empty?.remove();
 

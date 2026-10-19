@@ -107,6 +107,9 @@ Côté page : `state.js` porte l'état partagé et `rerender()` ; `main.js` bran
 - Les sélecteurs d'état du perso ciblent `> .char` : sans ça, l'état du chef s'applique aussi à ses sous-agents.
 - Le sol est le fond du viewport, recalé sur la caméra via `--cam-x/--cam-y/--cam-z` : ne pas redonner de fond
   ni de bordure à `.world`, sinon on retrouve une « fenêtre » qui se déplace au lieu d'un bureau infini.
+- **Un îlot ne quitte jamais l'open space** tant que sa session est là : en réunion ou au café, son bureau reste vide
+  (`.pod.away`) et le perso apparaît ailleurs (map `awayEls`). Les îlots suivent l'ordre des ids (`keepOrder`) :
+  sinon les bureaux bougent quand quelqu'un part ou revient, et au rafraîchissement.
 - Les éléments du bureau sont réutilisés d'un rendu à l'autre (map `els` dans `office.js`) pour ne pas relancer
   les animations ; le panneau compare son HTML via `dataset.html` pour garder les sélections en cours.
 

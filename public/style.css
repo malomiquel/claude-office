@@ -556,3 +556,9 @@ select { cursor: pointer; }
 .seat .proj { font-size: 10.5px; color: #9fb0c8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .seat:hover svg, .seat.selected svg { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
 
+/* îlot dont le chef est en réunion ou au café : bureau vide, chaise libre */
+.pod.away .char { visibility: hidden; }
+.pod.away .bubble { background: #ffffffcc; color: #6b6077; animation: none; }
+.pod.away .bubble::after { border-top-color: #ffffffcc; }
+.pod.away .laptop::after { background: #555; box-shadow: none; } /* écran en veille */
+
