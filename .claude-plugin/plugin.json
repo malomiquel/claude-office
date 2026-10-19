@@ -1,0 +1,23 @@
+{
+  "name": "office",
+  "description": "Un bureau en pixel art où chaque session Claude Code est un employé : suivre, écrire, répondre aux questions et autorisations, recruter des agents.",
+  "version": "0.2.0",
+  "author": {
+    "name": "Malo Miquel"
+  },
+  "license": "MIT",
+  "keywords": [
+    "dashboard",
+    "agents",
+    "channel",
+    "pixel-art"
+  ],
+  "mcpServers": {
+    "office": {
+      "command": "node",
+      "args": [
+        "${CLAUDE_PLUGIN_ROOT}/channel/office-channel.mjs"
+      ]
+    }
+  }
+}

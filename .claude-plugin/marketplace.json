@@ -1,0 +1,14 @@
+{
+  "name": "claude-office",
+  "description": "Claude Office : le bureau des agents Claude Code",
+  "owner": {
+    "name": "Malo Miquel"
+  },
+  "plugins": [
+    {
+      "name": "office",
+      "source": "./",
+      "description": "Un bureau en pixel art où chaque session Claude Code est un employé."
+    }
+  ]
+}

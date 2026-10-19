@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="office-token" content="__TOKEN__">
+<title>Claude Office</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<script type="module" src="/js/main.js"></script>
+</head>
+<body>
+<header>
+  <h1>Claude <span>Office</span></h1>
+  <div class="stats" id="stats"></div>
+  <div class="spacer"></div>
+  <div class="quota" id="quota" hidden>
+    <div class="gauge" id="qFive"><div class="clock"><i class="hand"></i></div><div class="q-txt"><b></b><span></span></div></div>
+    <div class="gauge" id="qWeek"><div class="clock"><i class="hand"></i></div><div class="q-txt"><b></b><span></span></div></div>
+  </div>
+  <button class="btn" id="hireBtn">+ Recruter</button>
+</header>
+
+<main class="viewport" id="viewport">
+  <div class="world" id="world">
+    <div class="rooms">
+      <section class="room room-open">
+        <!-- murs : fenêtres en haut, entrée en bas -->
+        <div class="wall w-top" aria-hidden="true"><i class="win"></i><i class="win"></i><i class="win"></i><i class="win"></i><i class="win"></i><i class="win"></i></div>
+        <div class="wall w-left" aria-hidden="true"></div>
+        <div class="wall w-bottom w-bottom-a" aria-hidden="true"></div>
+        <div class="wall w-bottom w-bottom-b" aria-hidden="true"></div>
+        <div class="entrance" aria-hidden="true"><span>ENTRÉE</span></div>
+        <h3 class="zone-title">Open space</h3>
+        <div class="openspace" id="openspace"></div>
+        <div class="plant big corner-l" aria-hidden="true"></div>
+        <div class="plant big corner-r" aria-hidden="true"></div>
+        <div class="furniture printer" aria-hidden="true"></div>
+        <div class="furniture shelf" aria-hidden="true"></div>
+      </section>
+      <div class="side">
+      <section class="room meeting">
+        <div class="partition p-top" aria-hidden="true"></div>
+        <div class="partition p-left p-left-a" aria-hidden="true"></div>
+        <div class="partition p-left p-left-b" aria-hidden="true"></div>
+        <div class="partition p-right" aria-hidden="true"></div>
+        <div class="doormat" aria-hidden="true"></div>
+        <div class="zone-head"><h3 class="zone-title">Salle de réunion</h3><span class="zone-note">t'attendent</span></div>
+        <div class="meeting-table">
+          <div class="board" aria-hidden="true"></div>
+          <div class="seats" id="meeting"></div>
+          <div class="table-top" aria-hidden="true"></div>
+        </div>
+        <p class="meeting-empty">Personne n'attend ta réponse.</p>
+      </section>
+      <section class="room coffee">
+        <!-- cloisons vitrées ; côté open space, une porte ouverte -->
+        <div class="partition p-top" aria-hidden="true"></div>
+        <div class="partition p-bottom" aria-hidden="true"></div>
+        <div class="partition p-left p-left-a" aria-hidden="true"></div>
+        <div class="partition p-left p-left-b" aria-hidden="true"></div>
+        <div class="partition p-right" aria-hidden="true"></div>
+        <div class="doormat" aria-hidden="true"></div>
+        <div class="zone-head">
+          <h3 class="zone-title">Coin café</h3>
+          <button class="btn ghost sm" id="fireAll" hidden title="Virer tous ceux qui sont en pause">Tout virer</button>
+        </div>
+        <div class="counter" aria-hidden="true"><div class="m"></div><div class="cooler"></div><div class="plant"></div></div>
+        <div class="rug"><div class="lounge" id="lounge"></div></div>
+        <div class="sofa" aria-hidden="true"></div>
+      </section>
+      </div>
+    </div>
+  </div>
+  <div class="cam-ctrl" role="toolbar" aria-label="Vue du bureau">
+    <button type="button" id="camOut" title="Dézoomer (−)">−</button>
+    <button type="button" id="camZoom" title="Taille réelle">100 %</button>
+    <button type="button" id="camIn" title="Zoomer (+)">+</button>
+    <button type="button" id="camFit" title="Tout voir (0)">⤢</button>
+  </div>
+  <div class="cam-hint" id="camHint">Glisse pour te déplacer · pince ou ⌘ + molette pour zoomer · double-clic sur un bureau</div>
+</main>
+
+<div class="ticker" id="ticker"><b>EN DIRECT</b></div>
+
+<aside class="panel" id="panel">
+  <div class="head">
+    <span id="pAvatar"></span>
+    <div><h2 id="pName"></h2><div class="sub" id="pSub"></div></div>
+    <div class="head-actions">
+      <button class="btn danger sm" id="pDismiss">Virer</button>
+      <button class="close" id="pClose" aria-label="Fermer">✕</button>
+    </div>
+  </div>
+  <div class="pbody" id="pBody">
+    <dl class="facts" id="pFacts"></dl>
+    <section class="askcard" id="pAsk" hidden></section>
+    <div class="log" id="pLog"></div>
+  </div>
+  <div class="compose" id="pCompose">
+    <textarea id="pMsg" rows="3" placeholder="Donner une nouvelle consigne… (fichiers : glisser, coller ou joindre)"></textarea>
+    <div class="attach" id="pAttach"></div>
+    <div class="row">
+      <select id="pMode">
+        <option value="">Mode habituel (tes réglages)</option>
+        <option value="acceptEdits">Peut modifier les fichiers</option>
+        <option value="plan">Lecture seule (plan)</option>
+        <option value="default">Demande avant d'agir (bloque en headless)</option>
+        <option value="bypassPermissions">Tout autorisé (risqué)</option>
+      </select>
+      <button class="btn" id="pSend">Envoyer</button>
+      <button class="btn danger" id="pFire" hidden>Stop</button>
+    </div>
+    <div class="err" id="pErr"></div>
+    <div class="ok" id="pOk"></div>
+    <div class="hint" id="pHint"></div>
+  </div>
+</aside>
+
+<div class="modal-bg" id="hireModal">
+  <form class="modal" id="hireForm">
+    <h2>Recruter un agent</h2>
+    <div class="field">
+      <span class="label">Dossier de travail</span>
+      <button type="button" class="folder" id="hPick">
+        <span class="ico" aria-hidden="true"></span>
+        <span class="path" id="hCwdLabel">Choisir un dossier…</span>
+        <span class="change">Parcourir</span>
+      </button>
+      <input id="hPath" type="text" hidden placeholder="/chemin/du/projet ou ~/projet">
+      <div class="recents" id="hRecents"></div>
+    </div>
+    <label>Mission
+      <textarea id="hTask" rows="4" placeholder="Ajoute des tests au module de paiement…" required></textarea>
+    </label>
+    <div class="attach" id="hAttach"></div>
+    <label>Autorisations
+      <select id="hMode">
+        <option value="">Mode habituel (tes réglages)</option>
+        <option value="acceptEdits">Peut modifier les fichiers</option>
+        <option value="plan">Lecture seule (plan)</option>
+        <option value="bypassPermissions">Tout autorisé (risqué)</option>
+      </select>
+    </label>
+    <div class="err" id="hErr"></div>
+    <div class="row">
+      <button type="button" class="btn ghost" id="hCancel">Annuler</button>
+      <button class="btn" type="submit">Embaucher</button>
+    </div>
+  </form>
+</div>
+</body>
+</html>

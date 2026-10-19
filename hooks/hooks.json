@@ -1,0 +1,54 @@
+{
+  "description": "Claude Office : démarrage du bureau, questions / autorisations / attentes relayées au bureau",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/ensure-server.mjs\" >/dev/null 2>&1 || true",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "AskUserQuestion|ExitPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "curl -s --connect-timeout 1 -m 110 -H 'Content-Type: application/json' -H 'X-Office-Hook: 1' --data-binary @- http://127.0.0.1:4748/hook/ask 2>/dev/null || true",
+            "timeout": 120,
+            "statusMessage": "Question envoyée à Claude Office…"
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "curl -s --connect-timeout 1 -m 110 -H 'Content-Type: application/json' -H 'X-Office-Hook: 1' --data-binary @- http://127.0.0.1:4748/hook/permission 2>/dev/null || true",
+            "timeout": 120,
+            "statusMessage": "Autorisation envoyée à Claude Office…"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "permission_prompt",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "curl -s --connect-timeout 1 -m 3 -H 'Content-Type: application/json' -H 'X-Office-Hook: 1' --data-binary @- http://127.0.0.1:4748/hook/notify >/dev/null 2>&1 || true",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
