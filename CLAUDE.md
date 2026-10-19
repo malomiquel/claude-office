@@ -70,6 +70,8 @@ Côté page : `state.js` porte l'état partagé et `rerender()` ; `main.js` bran
   `~/.claude-office/hired.json` (agents lancés par le bureau) est une automatisation (ex. le hook de résumé du plugin ECC lance
   `claude -p` après chaque réponse) : elle n'apparaît pas dans l'open space.
 - **Fin d'un sous-agent** : un `tool_use` nommé `SubagentHandback` (pas un simple message de fin).
+- **Interruption** (Échap) : message user `[Request interrupted by user…]` -> sous-agent `done` (il quitte le bureau),
+  session principale `waiting` « interrompu ». Sans ça, un sous-agent arrêté restait « au travail » 30 min.
 - **Quota** : `scripts/statusline-tap.mjs`, branché devant la barre de statut par `/office-setup`, recopie `rate_limits`
   dans `~/.claude-office/rate-limits.json` (l'ancien `~/.claude/statusline/rate-limits.json` est encore lu).
 - **Questions en direct** : hook `PreToolUse` (matcher `AskUserQuestion|ExitPlanMode`) du plugin,
